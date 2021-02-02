@@ -3,13 +3,11 @@ import gulp from 'gulp'
 import consolidate from 'gulp-consolidate'
 import bodyParser from 'body-parser'
 import through2 from 'through2'
-import babel from 'gulp-babel'
 import fs from 'fs'
 import stream from 'stream'
 import path from 'path'
-import Vinyl from 'vinyl'
 import * as babelCore from 'babel-core'
-import config from './babel.config'
+import vue2BabelConfig from './config/vue2.babel.config'
 import rename from 'gulp-rename'
 
 const app = express()
@@ -41,7 +39,7 @@ router.post('/api/vm/create', async (req, res) => {
   await mkdir(path.join(__dirname, 'cache', name))
 
   const transform = through2(function (chunk, enc, callback) {
-    const result = babelCore.transform(chunk.toString('utf8'), babelConfig)
+    const result = babelCore.transform(chunk.toString('utf8'), vue2BabelConfig)
     this.push(Buffer.from(result.code))
     return callback()
   })

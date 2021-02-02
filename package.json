@@ -4,7 +4,8 @@
   "description": "An online tool than can help developers to debug and communicate anywhere",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js",
+    "start": "next dev",
+    "server": "nodemon index.js",
     "test": "npm run test"
   },
   "repository": {
@@ -24,7 +25,10 @@
   },
   "homepage": "https://github.com/iray100200/rough-stone#readme",
   "devDependencies": {
+    "@monaco-editor/react": "^4.0.9",
+    "@zeit/next-css": "^1.0.1",
     "babel-core": "^6.26.0",
+    "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.2",
     "babel-plugin-import": "^1.1.1",
     "babel-plugin-syntax-dynamic-import": "^6.18.0",
@@ -39,6 +43,13 @@
     "babel-preset-env": "^1.7.0",
     "babel-register": "^6.26.0",
     "body-parser": "^1.19.0",
+    "eslint": "^7.19.0",
+    "eslint-config-react-app": "^6.0.0",
+    "eslint-plugin-flowtype": "^5.2.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-react": "^7.22.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
     "express": "^4.17.1",
     "gulp": "^4.0.2",
     "gulp-babel": "^7.0.1",
@@ -49,11 +60,42 @@
     "lodash": "^4.17.20",
     "monaco-editor": "^0.22.3",
     "nodemon": "^2.0.7",
-    "raw-loader": "^4.0.2",
     "through2": "^4.0.2",
-    "vinyl": "^2.2.1",
-    "vue": "^2.6.12",
-    "vue-loader": "^15.9.6",
-    "vue-template-compiler": "^2.6.12"
+    "webpack": "^5.19.0"
+  },
+  "dependencies": {
+    "@material-ui/core": "latest",
+    "@material-ui/icons": "latest",
+    "clsx": "latest",
+    "next": "latest",
+    "prop-types": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-monaco-editor": "^0.41.2"
+  },
+  "eslintConfig": {
+    "extends": [
+      "eslint:recommended",
+      "plugin:react/recommended"
+    ],
+    "parser": "babel-eslint",
+    "parserOptions": {
+      "ecmaFeatures": {
+        "jsx": true
+      },
+      "ecmaVersion": 2020,
+      "sourceType": "module"
+    },
+    "env": {
+      "node": true,
+      "browser": true
+    },
+    "rules": {
+      "semi": [
+        "error",
+        "never"
+      ],
+      "react/prop-types": 0
+    }
   }
 }
