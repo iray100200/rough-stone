@@ -140,7 +140,8 @@ const selectionMenu = [
 const runMenu = [
   {
     name: '运行',
-    shortcut: 'Ctrl+F5'
+    shortcut: 'Ctrl + F5',
+    command: 'run-run'
   }
 ]
 

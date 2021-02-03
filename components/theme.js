@@ -7,6 +7,12 @@ const theme = createMuiTheme({
       root: {
         minWidth: 52
       },
+      textPrimary: {
+        color: 'cfd8dc'
+      },
+      textSecondary: {
+        color: '#eceff1'
+      },
       containedSecondary: {
         '&:hover': {
           backgroundColor: '#37474f'
@@ -25,15 +31,13 @@ const theme = createMuiTheme({
     },
     MuiMenuItem: {
       root: {
-        fontSize: '13px',
+        fontSize: '12px',
         lineHeight: 1.2
       }
     },
     MuiTypography: {
       caption: {
-        display: 'flex',
-        alignItems: 'center',
-        minHeight: 24
+        minHeight: 20
       }
     },
     MuiListItemIcon: {
@@ -52,6 +56,9 @@ const theme = createMuiTheme({
     },
     action: {
       main: '#546e7a'
+    },
+    idle: {
+      main: '#999999'
     },
     error: {
       main: red.A400,

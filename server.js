@@ -9,11 +9,21 @@ import path from 'path'
 import * as babelCore from 'babel-core'
 import vue2BabelConfig from './config/vue2.babel.config'
 import rename from 'gulp-rename'
+import next from 'next'
+
+const dev = process.env.NODE_ENV !== 'production'
+const nextApp = next({ dev })
+const handle = nextApp.getRequestHandler()
 
 const app = express()
 const router = express.Router()
-const babelConfig = config
 const origin = 'http://localhost:9000'
+
+nextApp.prepare().then(() => {
+  app.get('*', (req, res) => {
+    return handle(req, res)
+  })
+})
 
 router.get('/file/vm/script/:name', (req, res) => {
   const { name } = req.params
