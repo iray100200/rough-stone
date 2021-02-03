@@ -11,7 +11,8 @@ const fileMenu = [
   },
   {
     name: '保存',
-    shortcut: 'Ctrl + S'
+    shortcut: 'Ctrl + S',
+    command: 'file-save'
   },
   {
     name: '另存为',
@@ -19,7 +20,8 @@ const fileMenu = [
   },
   {
     name: '保存全部',
-    shortcut: 'Ctrl + K S'
+    shortcut: 'Ctrl + K S',
+    command: 'file-save-all'
   },
   {
     type: 'divider'

@@ -171,10 +171,25 @@ class App extends React.Component {
     document.addEventListener('keydown', (evt) => {
       if(evt.ctrlKey && evt.key === 's') {
         evt.preventDefault()
+        eventEmitter.emit('file-save')
       }
     })
 
     eventEmitter.on('run-run', this.run)
+    eventEmitter.on('file-save', () => {
+      const { displayFileList, currentFileKey } = this.state
+      displayFileList[currentFileKey]._saved = true
+      this.setState({
+        displayFileList
+      })
+    })
+    eventEmitter.on('file-save-all', () => {
+      const { displayFileList } = this.state
+      displayFileList.forEach(o => o._saved = true)
+      this.setState({
+        displayFileList
+      })
+    })
   }
   handleEditorDidMount = (editor, monaco) => {
     this.editor = editor
@@ -235,19 +250,20 @@ class App extends React.Component {
   handleFileClick = (node) => {
     return () => {
       if (node === this.state.displayFileList[this.state.currentFileKey]) return
-      let index = this.state.displayFileList.findIndex(o => o === node)
+      const fileList = [...this.state.displayFileList].filter(o => o._saved)
+      const index = fileList.findIndex(o => o === node)
       if(index > -1) {
         this.setState({
           currentFileKey: index
         })
-        this.setEditorValue(this.state.displayFileList[index].content)
+        this.setEditorValue(fileList[index].content)
         return
       }
-      this.state.displayFileList.push(node)
+      fileList.push(node)
       this.setEditorValue(node.content)
       this.setState({
-        displayFileList: this.state.displayFileList,
-        currentFileKey: this.state.displayFileList.length - 1
+        displayFileList: fileList,
+        currentFileKey: fileList.length - 1
       })
     }
   }
