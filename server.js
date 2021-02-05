@@ -11,6 +11,9 @@ import vue2BabelConfig from './config/vue2.babel.config'
 import rename from 'gulp-rename'
 import next from 'next'
 
+import api_vm_create from './routes/api/vm/create'
+import api_vm_save from './routes/api/vm/save'
+
 const dev = process.env.NODE_ENV !== 'production'
 const nextApp = next({ dev })
 const handle = nextApp.getRequestHandler()
@@ -25,11 +28,6 @@ nextApp.prepare().then(() => {
   })
 })
 
-router.get('/file/vm/script/:name', (req, res) => {
-  const { name } = req.params
-  fs.createReadStream(path.join(__dirname, 'cache', name, 'index.js')).pipe(res)
-})
-
 function mkdir (path) {
   return new Promise((resolve) => {
     fs.stat(path, (err) => {
@@ -42,6 +40,9 @@ function mkdir (path) {
     })
   })
 }
+
+router.post('/api/vm/save', api_vm_save)
+router.get('/api/vm/read/:name', api_vm_create)
 
 router.post('/api/vm/create', async (req, res) => {
   const { name, type, template } = req.body
@@ -79,9 +80,26 @@ router.post('/api/vm/create', async (req, res) => {
     .pipe(gulp.dest(path.join(__dirname, 'cache', name)))
 })
 
-router.get('/file/vm/vue2/template/:name', (req, res) => {
+router.get('/file/vm/script/:name', (req, res) => {
   const { name } = req.params
-  fs.createReadStream(path.join(__dirname, 'cache', name, 'index.html')).pipe(res)
+  fs.createReadStream(path.join(__dirname, 'cache', name, 'index.js')).pipe(res)
+})
+
+router.get('/file/vm/vue2/template/:name', (req, res) => {
+  try {
+    const { name } = req.params
+    const file = path.join(__dirname, 'cache', name, 'index.html')
+    fs.stat(file, (err) => {
+      if (err) {
+        res.status(404).send('Not Found')
+        return
+      }
+      fs.createReadStream(file).pipe(res)
+    })
+  } catch (err) {
+    res.writeHead(404)
+    res.send('Not Found')
+  }
 })
 
 app.use(bodyParser.json())

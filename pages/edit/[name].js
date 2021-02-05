@@ -26,6 +26,7 @@ import InsertDriveFileIcon from '@material-ui/icons/InsertDriveFile'
 import CloseIcon from '@material-ui/icons/Close'
 import FolderIcon from '@material-ui/icons/Folder'
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
+import language from './language'
 
 const eventEmitter = new events.EventEmitter()
 
@@ -133,7 +134,7 @@ class App extends React.Component {
       currentSideMenuKey: 0,
       currentFileKey: 0,
       displayFileList: [],
-      fileTreeData: {
+      fileTreeData: [{
         id: 'root',
         name: 'ROUGH_STONE',
         type: 'folder',
@@ -163,7 +164,7 @@ class App extends React.Component {
             ],
           },
         ],
-      }
+      }]
     }
   }
 
@@ -178,9 +179,15 @@ class App extends React.Component {
     eventEmitter.on('run-run', this.run)
     eventEmitter.on('file-save', () => {
       const { displayFileList, currentFileKey } = this.state
-      displayFileList[currentFileKey]._saved = true
+      const target = displayFileList[currentFileKey]
+      target._saved = true
       this.setState({
         displayFileList
+      })
+      axios.post('/api/vm/save', {
+        name: 'test',
+        path: target.fullPath,
+        content: this.editor.getModel().getValue() 
       })
     })
     eventEmitter.on('file-save-all', () => {
@@ -190,9 +197,29 @@ class App extends React.Component {
         displayFileList
       })
     })
+
+    this.handleReadResource()
+  }
+  handleReadResource = () => {
+    axios.get('/api/vm/read/test').then(res => {
+      this.processTree([res.data])
+      console.log(res.data)
+      this.setState({
+        fileTreeData: res.data
+      })
+    })
+  }
+  processTree (data) {
+    data.forEach(o => {
+      if (o.children) {
+        o.children = Object.values(o.children)
+        this.processTree(o.children)
+      }
+    })
   }
   handleEditorDidMount = (editor, monaco) => {
     this.editor = editor
+    this.monaco = monaco
     this.editor.getModel().updateOptions({
       tabSize: 2,
       lineNumbers: true
@@ -256,19 +283,20 @@ class App extends React.Component {
         this.setState({
           currentFileKey: index
         })
-        this.setEditorValue(fileList[index].content)
+        this.setEditorValue(fileList[index].content, node.extension)
         return
       }
       fileList.push(node)
-      this.setEditorValue(node.content)
+      this.setEditorValue(node.content, node.extension)
       this.setState({
         displayFileList: fileList,
         currentFileKey: fileList.length - 1
       })
     }
   }
-  setEditorValue = (value) => {
+  setEditorValue = (value, extension) => {
     this.editor.getModel().setValue(value)
+    this.monaco.editor.setModelLanguage(this.editor.getModel(), language[extension])
   }
   handleFileClose = (node, index) => {
     return (evt) => {
@@ -276,7 +304,7 @@ class App extends React.Component {
       node._saved = false
       this.state.displayFileList.splice(index, 1)
       if(this.state.displayFileList.length > 0) {
-        this.setEditorValue(this.state.displayFileList[index - 1].content)
+        this.setEditorValue(this.state.displayFileList[index - 1].content, node.extension)
       } else {
         this.setEditorValue(null)
       }
@@ -352,8 +380,10 @@ class App extends React.Component {
       </Box>
     </Box>
   }
-  handleRunCommand = (command) => {
+  handleRunCommand = ({ command, click }) => {
     return () => {
+      if (click) click()
+      if (!command) return
       eventEmitter.emit(command)
       this.setState({
         currentMenuKey: null,
@@ -391,9 +421,9 @@ class App extends React.Component {
                   {
                     item.menuList.map((item, nindex) => {
                       if(item.type === 'divider') {
-                        return <Divider key={index} className={classes.divider} light />
+                        return <Divider key={String(index) + '-' + String(nindex)} className={classes.divider} light />
                       }
-                      return <MenuItem onClick={this.handleRunCommand(item.command)} key={String(index) + '-' + String(nindex)}>
+                      return <MenuItem onClick={this.handleRunCommand(item)} key={String(index) + '-' + String(nindex)}>
                         <Box width="100%" alignItems="center" display="flex">
                           <Box lineHeight={1} marginRight={6} flexGrow={1} overflow="hidden">{item.name}</Box>
                           <Box className={classes.shortcut}>{item.shortcut}</Box>

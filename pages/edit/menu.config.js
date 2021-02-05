@@ -10,6 +10,40 @@ const fileMenu = [
     type: 'divider'
   },
   {
+    name: '打开文件',
+    shortcut: 'Ctrl + O',
+    click: () => {
+      const input = document.createElement('input')
+      input.setAttribute('type', 'file')
+      input.style.cssText = 'visibility: hidden; position: absolute'
+      document.body.appendChild(input)
+      input.click()
+      input.addEventListener('change', evt => {
+        console.log(evt)
+        input.remove()
+      })
+    }
+  },
+  {
+    name: '打开文件夹',
+    shortcut: 'Ctrl + K + O',
+    click: () => {
+      const input = document.createElement('input')
+      input.setAttribute('webkitdirectory', true)
+      input.setAttribute('type', 'file')
+      input.style.cssText = 'visibility: hidden; position: absolute'
+      document.body.appendChild(input)
+      input.click()
+      input.addEventListener('change', evt => {
+        console.log(evt)
+        input.remove()
+      })
+    }
+  },
+  {
+    type: 'divider'
+  },
+  {
     name: '保存',
     shortcut: 'Ctrl + S',
     command: 'file-save'
