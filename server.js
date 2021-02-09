@@ -10,6 +10,7 @@ import * as babelCore from 'babel-core'
 import vue2BabelConfig from './config/vue2.babel.config'
 import rename from 'gulp-rename'
 import next from 'next'
+import compression from 'compression'
 
 import api_vm_create from './routes/api/vm/create'
 import api_vm_save from './routes/api/vm/save'
@@ -102,6 +103,7 @@ router.get('/file/vm/vue2/template/:name', (req, res) => {
   }
 })
 
+app.use(compression())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
 app.use('/', router)

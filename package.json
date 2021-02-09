@@ -51,6 +51,7 @@
     "babel-register": "^6.26.0",
     "body-parser": "^1.19.0",
     "clsx": "^1.1.1",
+    "compression": "^1.7.4",
     "eslint": "^7.19.0",
     "eslint-config-react-app": "^6.0.0",
     "eslint-plugin-flowtype": "^5.2.0",
@@ -78,7 +79,7 @@
     "clsx": "latest",
     "monaco-jsx-highlighter": "^1.0.2",
     "next": "latest",
-    "prop-types": "latest",
+    "prop-types": "^15.7.2",
     "react": "latest",
     "react-dom": "latest",
     "react-monaco-editor": "^0.41.2"
