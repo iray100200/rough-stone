@@ -77,7 +77,10 @@ const styles = (theme) => ({
     position: 'relative',
     color: theme.palette.grey[400],
     cursor: 'pointer',
-    paddingRight: 16,
+    paddingRight: 24,
+    paddingLeft: 10,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
     userSelect: 'none',
     '&:hover': {
       '& svg': {
@@ -396,7 +399,7 @@ class App extends React.Component {
             </div>
             {
               this.state.displayFileList.length === 0 && <Box height="calc(100vh - 102px)" display="flex" alignItems="center" justifyContent="center">
-                <Button color="secondary" variant="outlined">快速开始</Button>
+                {/* <Button color="primary" variant="text">快速开始</Button> */}
               </Box>
             }
           </Box>

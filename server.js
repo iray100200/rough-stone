@@ -12,7 +12,7 @@ import rename from 'gulp-rename'
 import next from 'next'
 import compression from 'compression'
 
-import api_vm_create from './routes/api/vm/create'
+import api_vm_read from './routes/api/vm/read'
 import api_vm_save from './routes/api/vm/save'
 
 const dev = process.env.NODE_ENV !== 'production'
@@ -43,10 +43,10 @@ function mkdir (path) {
 }
 
 router.post('/api/vm/save', api_vm_save)
-router.get('/api/vm/read/:name', api_vm_create)
+router.get('/api/vm/read/:name', api_vm_read)
 
-router.post('/api/vm/create', async (req, res) => {
-  const { name, type, template } = req.body
+router.post('/api/vm/create/vue2/template', async (req, res) => {
+  const { name, type, template, vue2Version, vueRouterVersion } = req.body
 
   await mkdir(path.join(__dirname, 'cache', name))
 
@@ -70,7 +70,9 @@ router.post('/api/vm/create', async (req, res) => {
 
   const options = {
     title: name,
-    scriptSrc: origin + '/file/vm/script/' + name
+    scriptSrc: origin + '/file/vm/script/' + name,
+    vue2Version: vue2Version || '2.6.12',
+    vueRouterVersion: vueRouterVersion || '3.5.1'
   }
 
   gulp.src(`./vm/${type}.html`)

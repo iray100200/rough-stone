@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "npm run test"
+    "test": "npm run test",
+    "build": "rs-build-vue2 -e ./cache/vue2/test/src/index.js -o ./distc"
   },
   "repository": {
     "type": "git",
@@ -38,16 +39,6 @@
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.2",
     "babel-plugin-import": "^1.1.1",
-    "babel-plugin-syntax-dynamic-import": "^6.18.0",
-    "babel-plugin-syntax-jsx": "^6.18.0",
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-plugin-transform-decorators": "^6.24.1",
-    "babel-plugin-transform-decorators-legacy": "^1.3.5",
-    "babel-plugin-transform-object-assign": "^6.22.0",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-plugin-transform-vue-jsx": "^3.7.0",
-    "babel-preset-env": "^1.7.0",
     "babel-register": "^6.26.0",
     "body-parser": "^1.19.0",
     "clsx": "^1.1.1",
@@ -69,6 +60,7 @@
     "lodash": "^4.17.20",
     "monaco-editor": "^0.22.3",
     "nodemon": "^2.0.7",
+    "rough-stone-builder-vue2": "latest",
     "through2": "^4.0.2",
     "webpack": "^5.19.0"
   },
