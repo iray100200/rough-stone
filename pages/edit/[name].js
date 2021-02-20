@@ -66,10 +66,27 @@ const styles = (theme) => ({
     height: '100%',
     border: 0
   },
+  fileList: {
+    height: 33,
+    overflowX: 'hidden',
+    backgroundColor: '#2f2f2f',
+    '&::-webkit-scrollbar': {
+      height: '3px'
+    },
+    '&::-webkit-scrollbar-track': {
+      backgroundColor: 'transparent'
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: '#555'
+    },
+    '&:hover': {
+      overflowX: 'overlay'
+    }
+  },
   fileItem: {
-    width: 110,
-    height: 32,
-    backgroundColor: '#303030',
+    minWidth: 114,
+    height: '100%',
+    backgroundColor: '#2f2f2f',
     fontStyle: 'italic',
     textAlign: 'center',
     lineHeight: '33px',
@@ -77,11 +94,12 @@ const styles = (theme) => ({
     position: 'relative',
     color: theme.palette.grey[400],
     cursor: 'pointer',
-    paddingRight: 24,
+    paddingRight: 26,
     paddingLeft: 10,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     userSelect: 'none',
+    borderRight: '1px solid #212121',
     '&:hover': {
       '& svg': {
         visibility: 'visible'
@@ -92,7 +110,7 @@ const styles = (theme) => ({
     fontStyle: 'initial',
   },
   activeFileItem: {
-    backgroundColor: '#191919',
+    backgroundColor: '#212121',
     color: theme.palette.grey[50],
     '& svg': {
       visibility: 'visible'
@@ -105,6 +123,10 @@ const styles = (theme) => ({
     right: 8,
     top: 9,
     cursor: 'pointer'
+  },
+  editor: {
+    flexGrow: 1,
+    overflow: 'hidden'
   }
 })
 
@@ -155,7 +177,11 @@ class App extends React.Component {
     return target
   }
   get model () {
+    if (!this.editor) return null
     return this.editor.getModel()
+  }
+  get isAttached () {
+    return this.state.displayFileList.length > 0
   }
   handlePinCurrent = () => {
     if (!this.currentFile) return
@@ -205,20 +231,27 @@ class App extends React.Component {
   handleEditorDidMount = (editor, monaco) => {
     this.editor = editor
     this.monaco = monaco
-    this.editor.getModel().updateOptions({
-      tabSize: 2,
-      lineNumbers: true
-    })
 
-    monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
-      noSemanticValidation: false,
-      noSyntaxValidation: false,
-    })
+    if (editor) {
+      editor.getModel().updateOptions({
+        tabSize: 2,
+        lineNumbers: true
+      })
+    }
+    
+    if (monaco) {
+      monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+        noSemanticValidation: false,
+        noSyntaxValidation: false,
+      })
+    }
   }
   undo = () => {
-    this.editor.getModel().undo()
+    if (!this.model) return
+    this.model.undo()
   }
   redo = () => {
+    if (!this.model) return
     this.editor.getModel().redo()
   }
   handleSelect = (index) => {
@@ -277,8 +310,10 @@ class App extends React.Component {
     }, this.handleReadCurrentFileContent)
   }
   setEditorValue = (value, extension) => {
-    this.editor.getModel().setValue(value)
-    this.monaco.editor.setModelLanguage(this.editor.getModel(), language[extension])
+    if (this.model) {
+      this.model.setValue(value)
+      this.monaco.editor.setModelLanguage(this.editor.getModel(), language[extension])
+    }
   }
   handleFileClose = (node, index) => {
     return (evt) => {
@@ -311,7 +346,7 @@ class App extends React.Component {
   }
   render() {
     const { classes } = this.props
-    return <div>
+    return <div style={{ height: '100vh' }}>
       <AppBar elevation={0}>
         <Toolbar disableGutters className={classes.toolbar} variant="dense">
           <Box width={56} display="flex" alignItems="center" justifyContent="center">
@@ -356,8 +391,8 @@ class App extends React.Component {
         </Toolbar>
       </AppBar>
       <Toolbar className={classes.toolbar} variant="dense" />
-      <Box display="flex">
-        <Box className={classes.side} width={56} flexShrink={0}>
+      <Box display="flex" height="calc(100vh - 34px)">
+        <Box className={classes.side} width={56} flexShrink={0} overflow="hidden">
           <List>
             {
               this.sideMenus.map((item, index) => {
@@ -374,8 +409,8 @@ class App extends React.Component {
           {this.renderCodeContent()}
         </Box>
         <Box display="flex" flexGrow={1} overflow="hidden">
-          <Box flexGrow={1} flexBasis="50%">
-            <Box display="flex" alignItems="center" height={32}>
+          <Box flexGrow={1} flexBasis="50%" overflow="hidden" display="flex" flexDirection="column">
+            <Box display={this.isAttached ? 'flex' : 'none'} alignItems="center" className={classes.fileList} flexShrink={0}>
               {
                 this.state.displayFileList.map((item, index) => {
                   const isCurrent = index === this.state.currentFileKey
@@ -397,23 +432,16 @@ class App extends React.Component {
                 })
               }
             </Box>
-            <Divider />
-            <div style={{ display: this.state.displayFileList.length > 0 ? 'block' : 'none' }}>
-              <Editor
-                height="calc(100vh - 102px)"
-                theme="vs-dark"
-                defaultLanguage="javascript"
-                onMount={this.handleEditorDidMount}
-                onChange={this.handleCodeChange}
-              />
-            </div>
-            {
-              this.state.displayFileList.length === 0 && <Box height="calc(100vh - 102px)" display="flex" alignItems="center" justifyContent="center">
-                {/* <Button color="primary" variant="text">快速开始</Button> */}
-              </Box>
-            }
+            {/* <Divider /> */}
+            <Editor
+              className={classes.editor}
+              theme="vs-dark"
+              defaultLanguage="javascript"
+              onMount={this.handleEditorDidMount}
+              onChange={this.handleCodeChange}
+            />
           </Box>
-          <Box className={classes.view} flexGrow={1} flexBasis="50%">
+          <Box className={classes.view} flexGrow={1} flexBasis="50%" overflow="hidden">
             <iframe ref={ref => this.iframe = ref} className={classes.iframe} src="http://localhost:8080/"></iframe>
           </Box>
         </Box>
