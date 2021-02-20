@@ -4,9 +4,9 @@
   "description": "An online tool than can help developers to debug and communicate anywhere",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "npm run test",
-    "build": "rs-build-vue2 -e ./cache/vue2/test/src/index.js -o ./distc"
+    "start": "set \"NODE_ENV=development\" && node index.js",
+    "build": "next build",
+    "test": "npm run test"
   },
   "repository": {
     "type": "git",

@@ -43,16 +43,15 @@ export default async (req, res) => {
     const setVirtualFile = (resource, filedir) => {
       const paths = filedir.replace(new RegExp(`cache/vue2/${name}/`, 'g'), '').split(/\//)
       const dir = getVirtualDir(paths)
-      const content = fs.readFileSync(filedir, 'utf8')
       const filename = paths[paths.length - 1]
       const target =_.get(resource, dir)
+      const ext = filename.split('.').reverse()[0]
       target[filename] = {
         type: 'file',
         id: uuid.v4(filename),
         name: filename,
         fullPath: filedir,
-        content,
-        extension: filename.split('.')[1]
+        extension: ext
       }
     }
 

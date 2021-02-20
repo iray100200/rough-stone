@@ -13,14 +13,14 @@ import Divider from '@material-ui/core/Divider'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
-import MenuConfig from './_menu.config'
+import MenuConfig from '../../components/edit/menu.config'
 import axios from 'axios'
 import events from 'events'
 import clsx from 'clsx'
 import CloseIcon from '@material-ui/icons/Close'
-import language from './_language'
+import language from '../../components/edit/language'
 import _ from 'lodash'
-import FileManagement from './_filem'
+import FileManagement from '../../components/edit/FileM'
 
 const eventEmitter = new events.EventEmitter()
 const RESPONSE_STATUS = {
@@ -136,48 +136,62 @@ class App extends React.Component {
     eventEmitter.on('run-run', this.run)
     eventEmitter.on('file-save', () => {
       this.handleSaveFile()
+      this.handlePinCurrent()
     })
     eventEmitter.on('file-save-all', () => {
       const { displayFileList } = this.state
-      displayFileList.forEach(o => o._saved = true)
+      displayFileList.forEach(o => o._fixed = true)
       this.setState({
         displayFileList
       })
     })
 
-    this.handleReadResource()
+    this.handleReadResourceTree()
+  }
+
+  get currentFile () {
+    const { displayFileList, currentFileKey } = this.state
+    const target = displayFileList && displayFileList[currentFileKey]
+    return target
+  }
+  get model () {
+    return this.editor.getModel()
+  }
+  handlePinCurrent = () => {
+    if (!this.currentFile) return
+    this.currentFile._fixed = true
+    this.setState({
+      displayFileList: [...this.state.displayFileList]
+    })
   }
   handleSaveFile = () => {
-    const { displayFileList, currentFileKey } = this.state
-      const target = displayFileList[currentFileKey]
-      if (!target) return
-      target._saved = true
-      this.setState({
-        displayFileList
-      })
-      const newContent = this.editor.getModel().getValue() 
-      axios.post('/api/vm/save', {
-        name: 'test',
-        path: target.fullPath,
-        content: newContent
-      }).then(res => {
-        if (res.data === RESPONSE_STATUS.SUCCESS) {
-          target.content = newContent
-          this.setState({
-            fileTreeData: {
-              ...this.state.fileTreeData
-            }
-          })
-        }
-      })
+    if (!this.currentFile) return
+    if (!this.model) return
+    const newContent = this.model.getValue() 
+    axios.post('/api/vm/save/file', {
+      fullPath: this.currentFile.fullPath,
+      content: newContent
+    }).then(res => {
+      if (res.data === RESPONSE_STATUS.SUCCESS) {
+        console.log('saved')
+      }
+    })
   }
-  handleReadResource = () => {
+  handleReadResourceTree = () => {
     axios.get('/api/vm/read/test').then(res => {
       this.processTree([res.data])
-      console.log(res.data)
       this.setState({
         fileTreeData: res.data
       })
+    })
+  }
+  handleReadCurrentFileContent = () => {
+    if (!this.currentFile) return
+    axios.post('/api/vm/read/file', { fullPath: this.currentFile.fullPath }, {
+      responseType: 'text',
+      transformResponse: data => data
+    }).then(res => {
+      this.setEditorValue(res.data, this.currentFile.extension)
     })
   }
   processTree (data) {
@@ -232,12 +246,8 @@ class App extends React.Component {
     /** example test */
     const projectName = 'test'
 
-    axios.post('/api/vm/create', {
-      type: 'vue2',
-      name: projectName,
-      template: this.state.code
-    }).then(() => {
-      this.iframe.contentWindow.location.reload(true)
+    axios.get('/api/vm/run/' + projectName).then(() => {
+      // this.iframe.contentWindow.location.reload(true)
     })
   }
   handleCodeChange = (value) => {
@@ -246,23 +256,25 @@ class App extends React.Component {
     })
   }
   handleFileClick = (node) => {
-    this.handleSaveFile()
-    if (node === this.state.displayFileList[this.state.currentFileKey]) return
-    const fileList = [...this.state.displayFileList].filter(o => o._saved)
+    if (node === this.currentFile) return
+    const fileList = this.state.displayFileList.filter(o => o._fixed)
     const index = fileList.findIndex(o => o === node)
+
+    this.handleSaveFile()
+
     if(index > -1) {
       this.setState({
         currentFileKey: index
-      })
-      this.setEditorValue(fileList[index].content, node.extension)
+      }, this.handleReadCurrentFileContent)
       return
     }
+
     fileList.push(node)
-    this.setEditorValue(node.content, node.extension)
+
     this.setState({
-      displayFileList: fileList,
+      displayFileList: [...fileList],
       currentFileKey: fileList.length - 1
-    })
+    }, this.handleReadCurrentFileContent)
   }
   setEditorValue = (value, extension) => {
     this.editor.getModel().setValue(value)
@@ -272,17 +284,15 @@ class App extends React.Component {
     return (evt) => {
       this.handleSaveFile()
       evt.stopPropagation()
-      node._saved = false
+      node._fixed = false
       this.state.displayFileList.splice(index, 1)
-      if(this.state.displayFileList.length > 0) {
-        this.setEditorValue(this.state.displayFileList[index - 1].content, node.extension)
-      } else {
+      if(this.state.displayFileList.length === 0) {
         this.setEditorValue(null)
       }
       this.setState({
         displayFileList: [...this.state.displayFileList],
         currentFileKey: index - 1
-      })
+      }, this.handleReadCurrentFileContent)
     }
   }
   renderCodeContent = () => {
@@ -369,9 +379,9 @@ class App extends React.Component {
               {
                 this.state.displayFileList.map((item, index) => {
                   const isCurrent = index === this.state.currentFileKey
-                  const isSaved = item._saved
+                  const isFixed = item._fixed
                   const className = [classes.fileItem]
-                  if(isSaved) {
+                  if(isFixed) {
                     className.push(classes.savedFileItem)
                   }
                   if(isCurrent) {
@@ -404,7 +414,7 @@ class App extends React.Component {
             }
           </Box>
           <Box className={classes.view} flexGrow={1} flexBasis="50%">
-            <iframe ref={ref => this.iframe = ref} className={classes.iframe} src="/file/vm/vue2/template/test"></iframe>
+            <iframe ref={ref => this.iframe = ref} className={classes.iframe} src="http://localhost:8080/"></iframe>
           </Box>
         </Box>
       </Box>

@@ -13,7 +13,9 @@ import next from 'next'
 import compression from 'compression'
 
 import api_vm_read from './routes/api/vm/read'
-import api_vm_save from './routes/api/vm/save'
+import api_vm_save_file from './routes/api/vm/save_file'
+import api_vm_read_file from './routes/api/vm/read_file'
+import api_vm_run from './routes/api/vm/run'
 
 const dev = process.env.NODE_ENV !== 'production'
 const nextApp = next({ dev })
@@ -42,8 +44,10 @@ function mkdir (path) {
   })
 }
 
-router.post('/api/vm/save', api_vm_save)
+router.post('/api/vm/save/file', api_vm_save_file)
 router.get('/api/vm/read/:name', api_vm_read)
+router.post('/api/vm/read/file', api_vm_read_file)
+router.get('/api/vm/run/:name', api_vm_run)
 
 router.post('/api/vm/create/vue2/template', async (req, res) => {
   const { name, type, template, vue2Version, vueRouterVersion } = req.body
@@ -107,7 +111,7 @@ router.get('/file/vm/vue2/template/:name', (req, res) => {
 
 app.use(compression())
 app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended: false}))
+app.use(bodyParser.urlencoded({ extended: false }))
 app.use('/', router)
 
 app.listen(9000)

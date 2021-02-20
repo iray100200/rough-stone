@@ -11,6 +11,7 @@ import { withStyles } from '@material-ui/core/styles'
 import InsertDriveFileIcon from '@material-ui/icons/InsertDriveFile'
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 import FolderIcon from '@material-ui/icons/Folder'
+import _ from 'lodash'
 
 const styles = () => ({
   sideContentHead: {
@@ -34,10 +35,6 @@ class _FileM extends React.PureComponent {
     super(props)
   }
   state = {}
-  static getDerivedStateFromProps(props) {
-    console.log(props)
-    return null
-  }
   handleFileClick = (nodes) => {
     return () => {
       this.props.onItemClick && this.props.onItemClick(nodes)
@@ -85,7 +82,7 @@ class _FileM extends React.PureComponent {
       label={(
         <Typography style={style} variant="caption">{nodes.name}</Typography>
       )}>
-      {Array.isArray(nodes.children) ? nodes.children.map((node) => this.renderTree(node)) : null}
+      {Array.isArray(nodes.children) ? _.orderBy(nodes.children, ['type', 'fullPath'], ['desc', 'asc']).map((node) => this.renderTree(node)) : null}
     </TreeItem>
   }
   render () {

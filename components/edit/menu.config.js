@@ -18,8 +18,7 @@ const fileMenu = [
       input.style.cssText = 'visibility: hidden; position: absolute'
       document.body.appendChild(input)
       input.click()
-      input.addEventListener('change', evt => {
-        console.log(evt)
+      input.addEventListener('change', () => {
         input.remove()
       })
     }
@@ -34,8 +33,7 @@ const fileMenu = [
       input.style.cssText = 'visibility: hidden; position: absolute'
       document.body.appendChild(input)
       input.click()
-      input.addEventListener('change', evt => {
-        console.log(evt)
+      input.addEventListener('change', () => {
         input.remove()
       })
     }

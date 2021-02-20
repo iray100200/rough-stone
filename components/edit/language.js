@@ -3,5 +3,7 @@ export default {
   'jsx': 'javascript',
   'json': 'json',
   'html': 'html',
-  'css': 'css'
+  'css': 'css',
+  'babelrc': 'json',
+  'ts': 'typescript'
 }
