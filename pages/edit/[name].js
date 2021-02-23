@@ -1,7 +1,6 @@
 import React from 'react'
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
-import Editor from "@monaco-editor/react"
 import BugReportIcon from '@material-ui/icons/BugReport'
 import Button from '@material-ui/core/Button'
 import Box from '@material-ui/core/Box'
@@ -13,14 +12,14 @@ import Divider from '@material-ui/core/Divider'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
-import MenuConfig from '../../components/edit/menu.config'
+import MenuConfig from '../../components/editor/menu.config'
 import axios from 'axios'
 import events from 'events'
 import clsx from 'clsx'
 import CloseIcon from '@material-ui/icons/Close'
-import language from '../../components/edit/language'
 import _ from 'lodash'
-import FileManagement from '../../components/edit/FileM'
+import FileManagement from '../../components/editor/FileManagement'
+import Editor from '../../components/editor/Editor'
 
 const eventEmitter = new events.EventEmitter()
 const RESPONSE_STATUS = {
@@ -143,7 +142,8 @@ class App extends React.Component {
       currentSideMenuKey: 0,
       currentFileKey: 0,
       displayFileList: [],
-      fileTreeData: null
+      fileTreeData: null,
+      fileExtension: 'javascript'
     }
   }
 
@@ -211,13 +211,16 @@ class App extends React.Component {
       })
     })
   }
-  handleReadCurrentFileContent = () => {
-    if (!this.currentFile) return
-    axios.post('/api/vm/read/file', { fullPath: this.currentFile.fullPath }, {
+  handleReadCurrentFileContent = (currentFile) => {
+    if (!currentFile) return
+    return axios.post('/api/vm/read/file', { fullPath: currentFile.fullPath }, {
       responseType: 'text',
       transformResponse: data => data
     }).then(res => {
-      this.setEditorValue(res.data, this.currentFile.extension)
+      return {
+        code: res.data,
+        fileExtension: currentFile.extension
+      }
     })
   }
   processTree (data) {
@@ -231,20 +234,6 @@ class App extends React.Component {
   handleEditorDidMount = (editor, monaco) => {
     this.editor = editor
     this.monaco = monaco
-
-    if (editor) {
-      editor.getModel().updateOptions({
-        tabSize: 2,
-        lineNumbers: true
-      })
-    }
-    
-    if (monaco) {
-      monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
-        noSemanticValidation: false,
-        noSyntaxValidation: false,
-      })
-    }
   }
   undo = () => {
     if (!this.model) return
@@ -288,7 +277,7 @@ class App extends React.Component {
       code: value
     })
   }
-  handleFileClick = (node) => {
+  handleFileClick = async (node) => {
     if (node === this.currentFile) return
     const fileList = this.state.displayFileList.filter(o => o._fixed)
     const index = fileList.findIndex(o => o === node)
@@ -296,38 +285,46 @@ class App extends React.Component {
     this.handleSaveFile()
 
     if(index > -1) {
+      const { code, fileExtension } = await this.handleReadCurrentFileContent(this.state.displayFileList[index])
       this.setState({
-        currentFileKey: index
-      }, this.handleReadCurrentFileContent)
+        currentFileKey: index,
+        code,
+        fileExtension
+      })
       return
     }
 
     fileList.push(node)
 
+    const nextIndex = fileList.length - 1
+    const { code, fileExtension } = await this.handleReadCurrentFileContent(fileList[nextIndex])
+
     this.setState({
       displayFileList: [...fileList],
-      currentFileKey: fileList.length - 1
-    }, this.handleReadCurrentFileContent)
-  }
-  setEditorValue = (value, extension) => {
-    if (this.model) {
-      this.model.setValue(value)
-      this.monaco.editor.setModelLanguage(this.editor.getModel(), language[extension])
-    }
+      currentFileKey: nextIndex,
+      code,
+      fileExtension
+    })
   }
   handleFileClose = (node, index) => {
-    return (evt) => {
+    return async (evt) => {
       this.handleSaveFile()
       evt.stopPropagation()
       node._fixed = false
       this.state.displayFileList.splice(index, 1)
       if(this.state.displayFileList.length === 0) {
-        this.setEditorValue(null)
+        this.setState({
+          code: null
+        })
       }
+      const nextIndex = index - 1
+      const { code, fileExtension } = await this.handleReadCurrentFileContent(this.state.displayFileList[nextIndex])
       this.setState({
         displayFileList: [...this.state.displayFileList],
-        currentFileKey: index - 1
-      }, this.handleReadCurrentFileContent)
+        currentFileKey: nextIndex,
+        code,
+        fileExtension
+      })
     }
   }
   renderCodeContent = () => {
@@ -432,14 +429,16 @@ class App extends React.Component {
                 })
               }
             </Box>
-            {/* <Divider /> */}
-            <Editor
-              className={classes.editor}
-              theme="vs-dark"
-              defaultLanguage="javascript"
-              onMount={this.handleEditorDidMount}
-              onChange={this.handleCodeChange}
-            />
+            {
+              this.state.displayFileList.length > 0 && 
+                <Editor
+                  value={this.state.code}
+                  fileExtension={this.state.fileExtension}
+                  className={classes.editor}
+                  theme="vs-dark"
+                  path={this.currentFile && this.currentFile.fullPath}
+                />
+            }
           </Box>
           <Box className={classes.view} flexGrow={1} flexBasis="50%" overflow="hidden">
             <iframe ref={ref => this.iframe = ref} className={classes.iframe} src="http://localhost:8080/"></iframe>

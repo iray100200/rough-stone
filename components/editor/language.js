@@ -1,9 +1,11 @@
 export default {
-  'js': 'javascript',
-  'jsx': 'javascript',
+  'js': 'jsx',
+  'jsx': 'jsx',
   'json': 'json',
   'html': 'html',
   'css': 'css',
   'babelrc': 'json',
-  'ts': 'typescript'
+  'ts': 'typescript',
+  'tsx': 'typescript',
+  'vue': 'vue'
 }

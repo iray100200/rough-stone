@@ -1,0 +1,93 @@
+@jsx-element: #4ec9b0;
+@jsx-origin-element: #569cd6;
+@jsx-property-name: #9cdcfe;
+@jsx-attr: #9cdcfe;
+@jsx-bracket: #569cd6;
+@callee: #dcdcaa;
+@keyword: #c586c0;
+@keyword-2: #569cd6;
+@expression: #9cdcfe;
+@object: #569cd6;
+@property: #dcdcaa;
+@method: #dcdcaa;
+@object-2: #4ec9b0;
+@argument: #9cdcfe;
+@string: #ce9178;
+@number: #b5cea8;
+@var-id: #dcdcaa;
+@jsx-text: #d0d0d0;
+
+.monaco-editor {
+  * {
+    &.lt, &.gt {
+      color: #808080;
+    }
+    &.lt {
+      &+.forward-slash {
+        color: #808080;
+      }
+    }
+  }
+  *.normal {
+    color: @object;
+  }
+  *.upper {
+    color: @object-2;
+  }
+  *.var-id {
+    color: @var-id;
+  }
+  *.argument {
+    color: @argument;
+  }
+  *.number {
+    color: @number;
+  }
+  *.string {
+    color: @string;
+  }
+  *.keyword {
+    color: @keyword;
+  }
+  *.keyword-2 {
+    color: @keyword-2;
+  }
+  *.jsx-text {
+    color: @jsx-text;
+  }
+  *.jsx-bracket {
+    color: @jsx-bracket;
+  }
+  *.callee {
+    color: @callee;
+  }
+  *.expression {
+    color: @expression;
+  }
+  *.jsx-exp {
+    &:not(.number):not(.property):not(.object) {
+      color: @jsx-attr;
+    }
+  }
+  *.object {
+    color: @object;
+    &.upper {
+      color: @object-2;
+    }
+  }
+  *.property {
+    color: @property;
+  }
+  *.method {
+    color: @method;
+  }
+  *.jsx-element {
+    color: @jsx-element;
+  }
+  *.jsx-origin-element {
+    color: @jsx-origin-element;
+    &.jsx-attr {
+      color: @jsx-attr;
+    }
+  }
+}

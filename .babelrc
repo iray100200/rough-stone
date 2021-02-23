@@ -1,0 +1,6 @@
+{
+  "presets": [
+    ["next/babel", { "transform-runtime": { "useESModules": false } }],
+    "@zeit/next-typescript/babel"
+  ]
+}

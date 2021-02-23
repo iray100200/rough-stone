@@ -3,6 +3,8 @@ import path from 'path'
 import * as uuid from 'uuid'
 import _ from 'lodash'
 
+const vmIgnore = [/^node_modules$/, /^dist$/, /^\.babelrc$/]
+
 const getVirtualDir = (paths) => {
   if (paths.length === 1) {
     return 'children'
@@ -18,7 +20,7 @@ const getVirtualDir = (paths) => {
 export default async (req, res) => {
   try {
     const { name } = req.params
-    const dir = `cache/vue2/${name}`
+    const rootDir = `cache/vue2/${name}`
     const resource = {
       id: 'root',
       name: name.toUpperCase(),
@@ -59,6 +61,9 @@ export default async (req, res) => {
       const files = fs.readdirSync(directory)
       files.map(filename => {
         const filedir = path.join(directory, filename).replace(/\\/g, '/')
+        if (directory === rootDir && vmIgnore.some(o => o.test(filename))) {
+          return
+        }
         const stats = fs.statSync(filedir)
         const isDir = stats.isDirectory()
         if (isDir) {
@@ -70,7 +75,7 @@ export default async (req, res) => {
       })
     }
 
-    traverseFile(dir, (filedir, stats) => {
+    traverseFile(rootDir, (filedir, stats) => {
       const isDir = stats.isDirectory()
       if (isDir) {
         setVirtualDir(resource, filedir)
