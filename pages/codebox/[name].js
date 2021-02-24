@@ -17,7 +17,6 @@ import axios from 'axios'
 import events from 'events'
 import clsx from 'clsx'
 import CloseIcon from '@material-ui/icons/Close'
-import _ from 'lodash'
 import FileManagement from '../../components/editor/FileManagement'
 import Editor from '../../components/editor/Editor'
 
@@ -171,34 +170,33 @@ class App extends React.Component {
     this.handleReadResourceTree()
   }
 
-  get currentFile () {
+  get currentFile() {
     const { displayFileList, currentFileKey } = this.state
     const target = displayFileList && displayFileList[currentFileKey]
     return target
   }
-  get model () {
-    if (!this.editor) return null
+  get model() {
+    if(!this.editor) return null
     return this.editor.getModel()
   }
-  get isAttached () {
+  get isAttached() {
     return this.state.displayFileList.length > 0
   }
   handlePinCurrent = () => {
-    if (!this.currentFile) return
+    if(!this.currentFile) return
     this.currentFile._fixed = true
     this.setState({
       displayFileList: [...this.state.displayFileList]
     })
   }
   handleSaveFile = () => {
-    if (!this.currentFile) return
-    if (!this.model) return
-    const newContent = this.model.getValue() 
+    if(!this.currentFile) return
+    if(!this.model) return
     axios.post('/api/vm/save/file', {
       fullPath: this.currentFile.fullPath,
-      content: newContent
+      content: this.model.getValue()
     }).then(res => {
-      if (res.data === RESPONSE_STATUS.SUCCESS) {
+      if(res.data === RESPONSE_STATUS.SUCCESS) {
         console.log('saved')
       }
     })
@@ -212,7 +210,7 @@ class App extends React.Component {
     })
   }
   handleReadCurrentFileContent = (currentFile) => {
-    if (!currentFile) return
+    if(!currentFile) return
     return axios.post('/api/vm/read/file', { fullPath: currentFile.fullPath }, {
       responseType: 'text',
       transformResponse: data => data
@@ -223,10 +221,10 @@ class App extends React.Component {
       }
     })
   }
-  processTree (data) {
+  processTree(data) {
     data.forEach(o => {
-      if (o.children) {
-        o.children = _.orderBy(Object.values(o.children), 'name', 'desc')
+      if(o.children) {
+        o.children = Object.values(o.children)
         this.processTree(o.children)
       }
     })
@@ -236,11 +234,11 @@ class App extends React.Component {
     this.monaco = monaco
   }
   undo = () => {
-    if (!this.model) return
+    if(!this.model) return
     this.model.undo()
   }
   redo = () => {
-    if (!this.model) return
+    if(!this.model) return
     this.editor.getModel().redo()
   }
   handleSelect = (index) => {
@@ -278,7 +276,7 @@ class App extends React.Component {
     })
   }
   handleFileClick = async (node) => {
-    if (node === this.currentFile) return
+    if(node === this.currentFile) return
     const fileList = this.state.displayFileList.filter(o => o._fixed)
     const index = fileList.findIndex(o => o === node)
 
@@ -308,8 +306,8 @@ class App extends React.Component {
   }
   handleFileClose = (node, index) => {
     return async (evt) => {
-      this.handleSaveFile()
       evt.stopPropagation()
+      this.handleSaveFile()
       node._fixed = false
       this.state.displayFileList.splice(index, 1)
       if(this.state.displayFileList.length === 0) {
@@ -317,7 +315,7 @@ class App extends React.Component {
           code: null
         })
       }
-      const nextIndex = index - 1
+      const nextIndex = 0
       const { code, fileExtension } = await this.handleReadCurrentFileContent(this.state.displayFileList[nextIndex])
       this.setState({
         displayFileList: [...this.state.displayFileList],
@@ -332,8 +330,8 @@ class App extends React.Component {
   }
   handleRunCommand = ({ command, click }) => {
     return () => {
-      if (click) click()
-      if (!command) return
+      if(click) click()
+      if(!command) return
       eventEmitter.emit(command)
       this.setState({
         currentMenuKey: null,
@@ -407,41 +405,46 @@ class App extends React.Component {
         </Box>
         <Box display="flex" flexGrow={1} overflow="hidden">
           <Box flexGrow={1} flexBasis="50%" overflow="hidden" display="flex" flexDirection="column">
-            <Box display={this.isAttached ? 'flex' : 'none'} alignItems="center" className={classes.fileList} flexShrink={0}>
-              {
-                this.state.displayFileList.map((item, index) => {
-                  const isCurrent = index === this.state.currentFileKey
-                  const isFixed = item._fixed
-                  const className = [classes.fileItem]
-                  if(isFixed) {
-                    className.push(classes.savedFileItem)
-                  }
-                  if(isCurrent) {
-                    className.push(classes.activeFileItem)
-                  }
-                  return <div
-                    key={item.name + '-' + index}
-                    onClick={() => this.handleFileClick(item)}
-                    className={clsx([className])}>
-                    {item.name}
-                    <CloseIcon onClick={this.handleFileClose(item, index)} className={classes.closeFileBtn} />
-                  </div>
-                })
-              }
-            </Box>
             {
-              this.state.displayFileList.length > 0 && 
-                <Editor
-                  value={this.state.code}
-                  fileExtension={this.state.fileExtension}
-                  className={classes.editor}
-                  theme="vs-dark"
-                  path={this.currentFile && this.currentFile.fullPath}
-                />
+              this.isAttached &&
+              <Box key="fileList" display="flex" alignItems="center" className={classes.fileList} flexShrink={0}>
+                {
+                  this.state.displayFileList.map((item, index) => {
+                    const isCurrent = index === this.state.currentFileKey
+                    const isFixed = item._fixed
+                    const className = [classes.fileItem]
+                    if(isFixed) {
+                      className.push(classes.savedFileItem)
+                    }
+                    if(isCurrent) {
+                      className.push(classes.activeFileItem)
+                    }
+                    return <div
+                      key={item.name + '-' + index}
+                      onClick={() => this.handleFileClick(item)}
+                      className={clsx([className])}>
+                      {item.name}
+                      <CloseIcon onClick={this.handleFileClose(item, index)} className={classes.closeFileBtn} />
+                    </div>
+                  })
+                }
+              </Box>
+            }
+            {
+              this.isAttached &&
+              <Editor
+                key="editor"
+                value={this.state.code}
+                fileExtension={this.state.fileExtension}
+                className={classes.editor}
+                theme="vs-dark"
+                onMount={this.handleEditorDidMount}
+                path={this.currentFile && this.currentFile.fullPath}
+              />
             }
           </Box>
           <Box className={classes.view} flexGrow={1} flexBasis="50%" overflow="hidden">
-            <iframe ref={ref => this.iframe = ref} className={classes.iframe} src="http://localhost:8080/"></iframe>
+            <iframe ref={ref => this.iframe = ref} className={classes.iframe} src="http://127.0.0.1:8080/"></iframe>
           </Box>
         </Box>
       </Box>

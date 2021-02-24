@@ -1,6 +1,19 @@
 .MuiTreeItem-root > .MuiTreeItem-content .MuiTreeItem-label {
   color: #cfd8dc;
   user-select: none;
+  background-color: transparent!important;
+  position: static;
+}
+
+.MuiTreeItem-root > .MuiTreeItem-content .MuiTreeItem-label:after {
+  position: absolute;
+  left: 56px;
+  height: 24px;
+  width: 260px;
+  content: '';
+  display: block;
+  margin-top: -24px;
+  pointer-events: none;
 }
 
 .MuiTreeItem-root > .MuiTreeItem-content .MuiTreeItem-label:hover {
@@ -8,15 +21,10 @@
   color: #fff;
 }
 
-.MuiTreeItem-root.Mui-selected > .MuiTreeItem-content:after {
-  position: absolute;
-  content: '';
-  left: 56px;
-  width: 260px;
-  height: 24px;
-  background-color: rgba(70, 78, 80, 0.3);
+.MuiTreeItem-root:not(.Mui-selected) > .MuiTreeItem-content .MuiTreeItem-label:hover:after {
+  background-color: rgba(70, 78, 80, 0.15);
 }
 
-.MuiTreeItem-root.Mui-selected > .MuiTreeItem-content .MuiTreeItem-label {
-  color: #fff!important;
+.MuiTreeItem-root.Mui-selected > .MuiTreeItem-content .MuiTreeItem-label:after {
+  background-color: rgba(70, 78, 80, 0.3);
 }

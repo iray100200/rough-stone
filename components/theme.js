@@ -17,6 +17,14 @@ const theme = createMuiTheme({
         '&:hover': {
           backgroundColor: '#37474f'
         }
+      },
+      textSizeSmall: {
+        fontSize: 12
+      }
+    },
+    MuiToolbar: {
+      dense: {
+        minHeight: 34
       }
     },
     MuiPaper: {
@@ -33,6 +41,9 @@ const theme = createMuiTheme({
       root: {
         fontSize: '12px',
         lineHeight: 1.2
+      },
+      label: {
+        background: 'transparent!important'
       }
     },
     MuiTypography: {

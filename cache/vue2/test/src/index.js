@@ -1,7 +1,7 @@
-import App from './App.vue'
+import Vue from 'vue'
 
-export default {
-  render () {
-    return <App></App>
+new Vue({
+  render (h) {
+    return <div>codebox1235</div>
   }
-}
+}).$mount('#app')

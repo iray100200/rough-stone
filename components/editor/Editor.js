@@ -17,6 +17,7 @@ class MonacoEditor extends React.Component {
     this.editor = null
     this.monaco = null
   }
+  isVueLanguageRegistered = false
   modules = new Map()
   get model() {
     return this.editor.getModel()
@@ -31,10 +32,17 @@ class MonacoEditor extends React.Component {
     }
     return true
   }
+  registerVue () {
+    if (this.isVueLanguageRegistered) return
+    registerVueLanguage(this.monaco)
+    this.isVueLanguageRegistered = true
+  }
   initCode = () => {
     const lang = language[this.props.fileExtension]
     this.model.setValue(this.props.value)
-    // this.editor.setLanguage(this.model, lang)
+    if (lang === 'vue') {
+      this.registerVue()
+    }
     if(lang === 'jsx') {
       this.syntaxWorker.postMessage({
         code: this.props.value,
@@ -55,7 +63,7 @@ class MonacoEditor extends React.Component {
       lineNumbers: true
     })
     if (this.props.fileExtension === 'vue') {
-      registerVueLanguage(monaco)
+      this.registerVue()
     }
     this.initCode()
   }
@@ -65,6 +73,9 @@ class MonacoEditor extends React.Component {
       title: this.props.fullPath,
       version: this.model.getVersionId()
     })
+    if (this.props.onChange) {
+      this.props.onChange(value)
+    }
   }
   setupSyntaxWorker = () => {
     this.syntaxWorker = new SyntaxHighlightWorker()

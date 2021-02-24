@@ -7,6 +7,7 @@ const isFirstCharUpperCase = (value) => {
 }
 
 const isFrom = (data, parent, key) => {
+  if (!parent[key]) return
   return parent[key].start === data.start && parent[key].end === data.end
 }
 
@@ -32,50 +33,68 @@ self.addEventListener('message', event => {
 
     const redefine = ast.tokens.filter(o => o.type.label === 'name')
 
-    traverse(ast, {
-      enter (path) {
-        try {
-          const parent = path.parent
-          const node = path.node
-          const { start, end } = node.loc
+    const process = (path) => {
+      try {
+        const parent = path.parent
+        const node = path.node
+        const { start, end } = node.loc
 
-          /** function arguments */
-          if (t.isFunctionDeclaration(parent) || t.isClassMethod(parent) || t.isObjectMethod(parent) || t.isArrowFunctionExpression(parent)) {
-            if (parent.params.some(o => o.start === node.start && o.end === node.end)) {
-              classifications.push({
-                start: start.column + 1,
-                end: end.column + 1,
-                kind: 'argument',
-                startLine: start.line,
-                endLine: end.line
-              })
-            }
-            return
+        /** function arguments */
+        if (t.isFunctionDeclaration(parent) || t.isClassMethod(parent) || t.isObjectMethod(parent) || t.isArrowFunctionExpression(parent)) {
+          if (parent.params.some(o => o.start === node.start && o.end === node.end)) {
+            classifications.push({
+              start: start.column + 1,
+              end: end.column + 1,
+              kind: 'argument',
+              startLine: start.line,
+              endLine: end.line
+            })
           }
-          /** object chain */
-          if (t.isMemberExpression(parent)) {
-            if (isFrom(node, parent, 'object')) {
-              classifications.push({
-                start: start.column + 1,
-                end: end.column + 1,
-                kind: 'object',
-                startLine: start.line,
-                endLine: end.line
-              })
-            }
-            if (isFrom(node, parent, 'property')) {
-              classifications.push({
-                start: start.column + 1,
-                end: end.column + 1,
-                kind: 'property',
-                startLine: start.line,
-                endLine: end.line
-              })
-            }
-            return
+          if (isFrom(node, parent, 'key')) {
+            classifications.push({
+              start: start.column + 1,
+              end: end.column + 1,
+              kind: 'method',
+              startLine: start.line,
+              endLine: end.line
+            })
           }
-          if (t.isCallExpression(node)) {
-            const { start, end } = node.callee.loc
+          return
+        }
+        /** object chain */
+        if (t.isMemberExpression(parent)) {
+          if (isFrom(node, parent, 'object')) {
+            classifications.push({
+              start: start.column + 1,
+              end: end.column + 1,
+              kind: 'object',
+              startLine: start.line,
+              endLine: end.line
+            })
+          }
+          if (isFrom(node, parent, 'property')) {
+            classifications.push({
+              start: start.column + 1,
+              end: end.column + 1,
+              kind: 'property',
+              startLine: start.line,
+              endLine: end.line
+            })
+          }
+          return
+        }
+        /** callee arguments */
+        if (t.isCallExpression(parent)) {
+          if (parent.arguments.some(o => o.start === node.start && o.end === node.end)) {
+            classifications.push({
+              start: start.column + 1,
+              end: end.column + 1,
+              kind: 'argument',
+              startLine: start.line,
+              endLine: end.line
+            })
+          }
+          if (isFrom(node, parent, 'callee')) {
             classifications.push({
               start: start.column + 1,
               end: end.column + 1,
@@ -83,85 +102,70 @@ self.addEventListener('message', event => {
               startLine: start.line,
               endLine: end.line
             })
-            return
           }
-          /** callee arguments */
-          if (t.isCallExpression(parent)) {
-            if (parent.arguments.some(o => o.start === node.start && o.end === node.end)) {
-              classifications.push({
-                start: start.column + 1,
-                end: end.column + 1,
-                kind: 'argument',
-                startLine: start.line,
-                endLine: end.line
-              })
-            }
-            return
-          }
-          /** variable expression */
-          if (t.isVariableDeclarator(parent)) {
-            if (isFrom(node, parent, 'id')) {
-              classifications.push({
-                start: start.column + 1,
-                end: end.column + 1,
-                kind: 'var-id',
-                startLine: start.line,
-                endLine: end.line
-              })
-            }
-          }
-          if (t.isJSXExpressionContainer(node)) {
-            classifications.push({
-              start: start.column + 1,
-              end: start.column + 2,
-              kind: 'jsx-bracket',
-              startLine: start.line,
-              endLine: end.line
-            })
-            classifications.push({
-              start: end.column,
-              end: end.column + 1,
-              kind: 'jsx-bracket',
-              startLine: start.line,
-              endLine: end.line
-            })
-            classifications.push({
-              start: start.column + 2,
-              end: end.column,
-              kind: 'jsx-exp',
-              startLine: start.line,
-              endLine: end.line
-            })
-            return
-          }
-          if (t.isJSXAttribute(parent)) {
-            classifications.push({
-              start: start.column + 1,
-              end: end.column + 1,
-              kind: 'jsx-attr',
-              startLine: start.line,
-              endLine: end.line
-            })
-            return
-          }
-          /** common */
-          if (redefine.length > 0) {
-            const next = redefine.find(o => o.start === node.start && o.end === node.end)
-            if (next) {
-              classifications.push({
-                start: start.column + 1,
-                end: end.column + 1,
-                kind: parseType(path.type || path.parent.type),
-                startLine: start.line,
-                endLine: end.line
-              })
-            }
-          }
-        } catch (err) {
-          console.log(err)
+          return
         }
+        /** common */
+        if (redefine.length > 0) {
+          const next = redefine.find(o => o.start === node.start && o.end === node.end)
+          if (next) {
+            classifications.push({
+              start: start.column + 1,
+              end: end.column + 1,
+              kind: parseType(path.type || parent.type),
+              startLine: start.line,
+              endLine: end.line
+            })
+          }
+        }
+      } catch (err) {
+        console.log(err)
+      }
+    }
+
+    traverse(ast, {
+      Identifier (path) {
+        process(path)
+      },
+      JSXAttribute (path) {
+        const node = path.node
+        const { start, end } = node.loc
+        classifications.push({
+          start: start.column + 1,
+          end: end.column + 1,
+          kind: 'jsx-attr',
+          startLine: start.line,
+          endLine: end.line
+        })
+      },
+      JSXExpressionContainer (path) {
+        const node = path.node
+        const { start, end } = node.loc
+        classifications.push({
+          start: start.column + 1,
+          end: start.column + 2,
+          kind: 'jsx-bracket',
+          startLine: start.line,
+          endLine: end.line
+        })
+        classifications.push({
+          start: end.column,
+          end: end.column + 1,
+          kind: 'jsx-bracket',
+          startLine: start.line,
+          endLine: end.line
+        })
+        classifications.push({
+          start: start.column + 2,
+          end: end.column,
+          kind: 'jsx-exp',
+          startLine: start.line,
+          endLine: end.line
+        })
       }
     })
+
+    console.log(ast)
 
     ast.tokens.forEach(o => {
       const label = o.type.label

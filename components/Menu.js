@@ -29,7 +29,7 @@ export default function Menu (props) {
 
   return <>
     <props.trigger.type {...props.trigger.props} ref={anchorRef} onClick={handleOpen} onMouseEnter={handleMouseEnter}></props.trigger.type>
-    <Popper placement="top-start" open={open} anchorEl={anchorRef.current} role={undefined} disablePortal={false}>
+    <Popper placement="top-start" open={open || false} anchorEl={anchorRef.current} role={undefined} disablePortal={false}>
       {() => (
         <Paper>
           <ClickAwayListener onClickAway={handleClose}>

@@ -1,21 +1,12 @@
 <template>
-  <div class="test">App12459121: {{name}}</div>
+
 </template>
 <script>
-export default {
-  created () {
-
-  },
-  data () {
-    return {
-      name: 'app'
+  export default {
+    data () {
+      return {
+        
+      }
     }
   }
-}
 </script>
-<style>
-.test {
-  background: #ccc;
-  color: #777;
-}
-</style>

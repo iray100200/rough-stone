@@ -11,8 +11,12 @@ import { withStyles } from '@material-ui/core/styles'
 import InsertDriveFileIcon from '@material-ui/icons/InsertDriveFile'
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 import FolderIcon from '@material-ui/icons/Folder'
+import RightClickMenu from '../RightClickMenu'
+import MenuList from '@material-ui/core/MenuList'
+import MenuItem from '@material-ui/core/MenuItem'
 import _ from 'lodash'
 
+const MtTreeItem = TreeItem
 const styles = () => ({
   sideContentHead: {
     display: 'flex',
@@ -30,6 +34,19 @@ const styles = () => ({
   },
 })
 
+function wrapTreeItem () {
+  return class TreeItem extends React.Component {
+    render () {
+      return <RightClickMenu trigger={<MtTreeItem {...this.props}></MtTreeItem>}>
+        <MenuList>
+          <MenuItem>123</MenuItem>
+          <MenuItem>456</MenuItem>
+        </MenuList>
+      </RightClickMenu>
+    }
+  }
+}
+
 class _FileM extends React.PureComponent {
   constructor(props) {
     super(props)
@@ -42,6 +59,7 @@ class _FileM extends React.PureComponent {
   }
   renderTree = (nodes) => {
     if (!nodes) return
+    const TreeItem = wrapTreeItem(MtTreeItem)
     const { classes } = this.props
     const iconSize = 15
     const style = { display: 'flex', alignItems: 'center', height: 24 }
@@ -49,6 +67,7 @@ class _FileM extends React.PureComponent {
       const icon = <InsertDriveFileIcon style={{ fontSize: iconSize }} />
       return <TreeItem
         icon={icon}
+        node={nodes}
         onClick={this.handleFileClick(nodes)}
         className={classes.treeItem}
         key={nodes.id}
@@ -65,6 +84,7 @@ class _FileM extends React.PureComponent {
       const icon = <FolderOpenIcon style={{ fontSize: iconSize, color: '#808080' }} />
       return <TreeItem
         icon={icon}
+        node={nodes}
         className={classes.treeItem}
         key={nodes.id}
         nodeId={nodes.id}
@@ -78,11 +98,12 @@ class _FileM extends React.PureComponent {
       expandIcon={<FolderIcon style={{ fontSize: iconSize }} />}
       className={classes.treeItem}
       key={nodes.id}
+      node={nodes}
       nodeId={nodes.id}
       label={(
         <Typography style={style} variant="caption">{nodes.name}</Typography>
       )}>
-      {Array.isArray(nodes.children) ? _.orderBy(nodes.children, ['type', 'fullPath'], ['desc', 'asc']).map((node) => this.renderTree(node)) : null}
+      {Array.isArray(nodes.children) ? _.orderBy(nodes.children, [item => item.type, item => item.fullPath.toLowerCase()], ['desc', 'asc']).map((node) => this.renderTree(node)) : null}
     </TreeItem>
   }
   render () {
