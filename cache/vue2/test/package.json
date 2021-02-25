@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Raymond",
   "license": "ISC",
   "dependencies": {
     "vue": "^2.6.12"

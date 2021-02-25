@@ -16,6 +16,7 @@ import axios from 'axios'
 import events from 'events'
 import clsx from 'clsx'
 import CloseIcon from '@material-ui/icons/Close'
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord'
 import MenuConfig from '../../components/MonacoEditor/menu.config'
 import FileManagement from '../../components/MonacoEditor/FileManagement'
 import Editor from '../../components/MonacoEditor/Editor'
@@ -114,13 +115,21 @@ const styles = (theme) => ({
       visibility: 'visible'
     }
   },
+  clearIcon: {
+    position: 'absolute',
+    right: 8,
+    top: 11,
+    cursor: 'pointer',
+    height: 12
+  },
+  editingFileBtn: {
+    fontSize: 12,
+    verticalAlign: 'top'
+  },
   closeFileBtn: {
     visibility: 'hidden',
-    position: 'absolute',
-    fontSize: 15,
-    right: 8,
-    top: 9,
-    cursor: 'pointer'
+    fontSize: 12,
+    verticalAlign: 'top'
   },
   editor: {
     flexGrow: 1
@@ -141,7 +150,9 @@ class App extends React.Component {
       currentFileKey: 0,
       displayFileList: [],
       fileTreeData: null,
-      fileExtension: 'javascript'
+      fileExtension: 'javascript',
+      editingFiles: [],
+      clearIconHoverPath: ''
     }
   }
 
@@ -157,6 +168,7 @@ class App extends React.Component {
     eventEmitter.on('file-save', () => {
       this.handleSaveFile()
       this.handlePinCurrent()
+      this.clearCurrentEditingState()
     })
     eventEmitter.on('file-save-all', () => {
       const { displayFileList } = this.state
@@ -168,7 +180,6 @@ class App extends React.Component {
 
     this.handleReadResourceTree()
   }
-
   get currentFile() {
     const { displayFileList, currentFileKey } = this.state
     const target = displayFileList && displayFileList[currentFileKey]
@@ -180,6 +191,22 @@ class App extends React.Component {
   }
   get isAttached() {
     return this.state.displayFileList.length > 0
+  }
+  clearCurrentEditingState = () => {
+    const { currentFileKey, displayFileList } = this.state
+    displayFileList[currentFileKey]._unsaved = false
+    this.setState({
+      displayFileList: [...displayFileList]
+    })
+  }
+  clearAllEditingState = () => {
+    const { displayFileList } = this.state
+    this.setState({
+      displayFileList: [displayFileList.map(o => {
+        o._unsaved = false
+        return o
+      })]
+    })
   }
   handlePinCurrent = () => {
     if(!this.currentFile) return
@@ -338,6 +365,25 @@ class App extends React.Component {
       })
     }
   }
+  handleFileChange = () => {
+    const { displayFileList, currentFileKey } = this.state
+    displayFileList[currentFileKey]._unsaved = true
+    this.setState({
+      displayFileList: [...displayFileList]
+    })
+  }
+  handleMouseEnterClearIcon = (path) => {
+    return () => {
+      this.setState({
+        clearIconHoverPath: path
+      })
+    }
+  }
+  handleMouseLeaveClearIcon = () => {
+    this.setState({
+      clearIconHoverPath: null
+    })
+  }
   render() {
     const { classes } = this.props
     return <div style={{ height: '100vh' }}>
@@ -412,6 +458,8 @@ class App extends React.Component {
                     const isCurrent = index === this.state.currentFileKey
                     const isFixed = item._fixed
                     const className = [classes.fileItem]
+                    const isUnsaved = item._unsaved
+                    const isClearIconHovered = this.state.clearIconHoverPath === item.fullPath
                     if(isFixed) {
                       className.push(classes.savedFileItem)
                     }
@@ -423,7 +471,15 @@ class App extends React.Component {
                       onClick={() => this.handleFileClick(item)}
                       className={clsx([className])}>
                       {item.name}
-                      <CloseIcon onClick={this.handleFileClose(item, index)} className={classes.closeFileBtn} />
+                      <i
+                        className={classes.clearIcon}
+                        onMouseEnter={this.handleMouseEnterClearIcon(item.fullPath)}
+                        onMouseLeave={this.handleMouseLeaveClearIcon}>
+                        {
+                          isUnsaved && !isClearIconHovered ? <FiberManualRecordIcon className={classes.editingFileBtn}></FiberManualRecordIcon> :
+                            <CloseIcon onClick={this.handleFileClose(item, index)} className={classes.closeFileBtn} />
+                        }
+                      </i>
                     </div>
                   })
                 }
@@ -437,7 +493,7 @@ class App extends React.Component {
                 fileExtension={this.state.fileExtension}
                 className={classes.editor}
                 onMount={this.handleEditorDidMount}
-                path={"file:///test.jsx"}
+                onChange={this.handleFileChange}
               />
             }
           </Box>

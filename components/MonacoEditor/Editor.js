@@ -68,11 +68,6 @@ class MonacoEditor extends React.Component {
     this.initCode()
   }
   handleChange = (value) => {
-    this.syntaxWorker.postMessage({
-      code: value,
-      title: this.props.fullPath,
-      version: this.model.getVersionId()
-    })
     if(this.props.onChange) {
       this.props.onChange(value)
     }
