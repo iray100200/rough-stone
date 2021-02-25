@@ -1,6 +1,6 @@
 export default {
-  'js': 'jsx',
-  'jsx': 'jsx',
+  'js': 'javascript',
+  'jsx': 'javascript',
   'json': 'json',
   'html': 'html',
   'css': 'css',

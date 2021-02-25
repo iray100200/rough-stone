@@ -54,7 +54,7 @@ self.addEventListener('message', event => {
             classifications.push({
               start: start.column + 1,
               end: end.column + 1,
-              kind: 'method',
+              kind: parent.kind || 'method',
               startLine: start.line,
               endLine: end.line
             })
@@ -165,8 +165,6 @@ self.addEventListener('message', event => {
       }
     })
 
-    console.log(ast)
-
     ast.tokens.forEach(o => {
       const label = o.type.label
       const { start, end } = o.loc
@@ -194,7 +192,6 @@ self.addEventListener('message', event => {
           append('gt')
           break
         case 'name':
-          append('normal')
           append(isFirstCharUpperCase(o.value) ? 'upper' : 'lower')
           break
         case '/':

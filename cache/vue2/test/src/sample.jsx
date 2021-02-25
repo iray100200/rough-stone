@@ -9,6 +9,10 @@ class Name extends React.Component {
   }
 }
 
+const app = () => {
+  return 123
+}
+
 export default function App(app) {
   const p = console.log
 

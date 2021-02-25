@@ -18,7 +18,7 @@ import events from 'events'
 import clsx from 'clsx'
 import CloseIcon from '@material-ui/icons/Close'
 import FileManagement from '../../components/editor/FileManagement'
-import Editor from '../../components/editor/Editor'
+import Editor from '../../components/MonacoEditor/Editor'
 
 const eventEmitter = new events.EventEmitter()
 const RESPONSE_STATUS = {
@@ -123,8 +123,7 @@ const styles = (theme) => ({
     cursor: 'pointer'
   },
   editor: {
-    flexGrow: 1,
-    overflow: 'hidden'
+    flexGrow: 1
   }
 })
 
@@ -437,9 +436,8 @@ class App extends React.Component {
                 value={this.state.code}
                 fileExtension={this.state.fileExtension}
                 className={classes.editor}
-                theme="vs-dark"
                 onMount={this.handleEditorDidMount}
-                path={this.currentFile && this.currentFile.fullPath}
+                path={"file:///test.jsx"}
               />
             }
           </Box>
