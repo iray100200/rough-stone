@@ -1,9 +1,10 @@
 import fs from 'fs'
 import path from 'path'
-import * as uuid from 'uuid'
+import { v5 as uuidv5, v4 as uuidv4 } from 'uuid'
 import _ from 'lodash'
 
-const vmIgnore = [/^node_modules$/, /^dist$/, /^\.babelrc$/]
+const VM_IGNORE = [/^node_modules$/, /^dist$/, /^\.babelrc$/]
+const NAMESPACE = uuidv4('rough-stone')
 
 const getVirtualDir = (paths) => {
   if (paths.length === 1) {
@@ -35,7 +36,7 @@ export default async (req, res) => {
       const target =_.get(resource, dir)
       target[folder] = {
         type: 'folder',
-        id: uuid.v4(folder),
+        id: uuidv5(folder, NAMESPACE),
         name: folder,
         fullPath: filedir,
         children: {}
@@ -50,7 +51,7 @@ export default async (req, res) => {
       const ext = filename.split('.').reverse()[0]
       target[filename] = {
         type: 'file',
-        id: uuid.v4(filename),
+        id: uuidv5(filename, NAMESPACE),
         name: filename,
         fullPath: filedir,
         extension: ext
@@ -61,7 +62,7 @@ export default async (req, res) => {
       const files = fs.readdirSync(directory)
       files.map(filename => {
         const filedir = path.join(directory, filename).replace(/\\/g, '/')
-        if (directory === rootDir && vmIgnore.some(o => o.test(filename))) {
+        if (directory === rootDir && VM_IGNORE.some(o => o.test(filename))) {
           return
         }
         const stats = fs.statSync(filedir)

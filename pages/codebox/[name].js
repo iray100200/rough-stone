@@ -21,7 +21,7 @@ import MenuConfig from '../../components/MonacoEditor/menu.config'
 import FileManagement from '../../components/MonacoEditor/FileManagement'
 import Editor from '../../components/MonacoEditor/Editor'
 
-const eventEmitter = new events.EventEmitter()
+const EVENT_EMITTER = new events.EventEmitter()
 const RESPONSE_STATUS = {
   SUCCESS: 'success',
   ERROR: 'error'
@@ -149,7 +149,7 @@ class App extends React.Component {
       currentSideMenuKey: 0,
       currentFileKey: 0,
       displayFileList: [],
-      fileTreeData: null,
+      dirTreeData: null,
       fileExtension: 'javascript',
       editingFiles: [],
       clearIconHoverPath: ''
@@ -160,17 +160,17 @@ class App extends React.Component {
     document.addEventListener('keydown', (evt) => {
       if(evt.ctrlKey && evt.key === 's') {
         evt.preventDefault()
-        eventEmitter.emit('file-save')
+        EVENT_EMITTER.emit('file-save')
       }
     })
 
-    eventEmitter.on('run-run', this.run)
-    eventEmitter.on('file-save', () => {
+    EVENT_EMITTER.on('run-run', this.run)
+    EVENT_EMITTER.on('file-save', () => {
       this.handleSaveFile()
       this.handlePinCurrent()
       this.clearCurrentEditingState()
     })
-    eventEmitter.on('file-save-all', () => {
+    EVENT_EMITTER.on('file-save-all', () => {
       const { displayFileList } = this.state
       displayFileList.forEach(o => o._fixed = true)
       this.setState({
@@ -231,7 +231,7 @@ class App extends React.Component {
     axios.get('/api/vm/read/test').then(res => {
       this.processTree([res.data])
       this.setState({
-        fileTreeData: res.data
+        dirTreeData: res.data
       })
     })
   }
@@ -247,11 +247,16 @@ class App extends React.Component {
       }
     })
   }
-  processTree(data) {
+  processTree(data, parent = null) {
     data.forEach(o => {
+      Object.defineProperty(o, 'parent', {
+        get: ((data) => {
+          return () => data
+        })(parent)
+      })
       if(o.children) {
         o.children = Object.values(o.children)
-        this.processTree(o.children)
+        this.processTree(o.children, o)
       }
     })
   }
@@ -338,8 +343,12 @@ class App extends React.Component {
       this.state.displayFileList.splice(index, 1)
       if(this.state.displayFileList.length === 0) {
         this.setState({
-          code: null
+          code: null,
+          displayFileList: [],
+          currentFileKey: 0,
+          fileExtension: ''
         })
+        return
       }
       const nextIndex = 0
       const { code, fileExtension } = await this.handleReadCurrentFileContent(this.state.displayFileList[nextIndex])
@@ -352,13 +361,19 @@ class App extends React.Component {
     }
   }
   renderCodeContent = () => {
-    return <FileManagement dataSource={this.state.fileTreeData} onItemClick={this.handleFileClick} />
+    return <FileManagement onCreateFile={this.handleCreateFile} dataSource={this.state.dirTreeData} onItemClick={this.handleFileClick} />
+  }
+  handleCreateFile = (fileName, parentNode) => {
+    axios.post('/api/vm/new/file', {
+      fileName,
+      parentPath: parentNode.fullPath
+    }).then(this.handleReadResourceTree)
   }
   handleRunCommand = ({ command, click }) => {
     return () => {
       if(click) click()
       if(!command) return
-      eventEmitter.emit(command)
+      EVENT_EMITTER.emit(command)
       this.setState({
         currentMenuKey: null,
         active: false

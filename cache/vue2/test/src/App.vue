@@ -6,7 +6,7 @@
   c.test(123)
   export default {
     data () {
-      return { 
+      return {
         
       }
     }

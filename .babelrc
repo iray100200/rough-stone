@@ -1,6 +1,14 @@
 {
   "presets": [
-    ["next/babel", { "transform-runtime": { "useESModules": false } }],
-    "@zeit/next-typescript/babel"
-  ]
+    ["next/babel", { 
+      "transform-runtime": { 
+        "useESModules": false 
+      },
+      "preset-env": {
+        "targets": {
+          "browsers": "defaults"
+      }
+    } }]
+  ],
+  "plugins": ["@babel/plugin-transform-object-assign"]
 }

@@ -31,7 +31,7 @@ export async function liftOff(monaco) {
 
       return {
         format: 'plist',
-        content: tsGrammar,
+        content: tsGrammar
       }
     }
   })
@@ -41,7 +41,7 @@ export async function liftOff(monaco) {
   grammars.set('html', 'text.html.basic')
   grammars.set('vue', 'text.html.basic')
   grammars.set('typescript', 'source.tsx')
-  grammars.set('javascript', 'source.js')
+  grammars.set('javascript', 'source.jsx')
 
   await wireTmGrammars(monaco, registry, grammars)
 }

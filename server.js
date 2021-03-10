@@ -16,6 +16,7 @@ import api_vm_read from './routes/api/vm/read'
 import api_vm_save_file from './routes/api/vm/save_file'
 import api_vm_read_file from './routes/api/vm/read_file'
 import api_vm_run from './routes/api/vm/run'
+import api_vm_new_file from './routes/api/vm/new_file'
 
 const dev = process.env.NODE_ENV !== 'production'
 const nextApp = next({ dev })
@@ -48,6 +49,7 @@ router.post('/api/vm/save/file', api_vm_save_file)
 router.get('/api/vm/read/:name', api_vm_read)
 router.post('/api/vm/read/file', api_vm_read_file)
 router.get('/api/vm/run/:name', api_vm_run)
+router.post('/api/vm/new/file', api_vm_new_file)
 
 router.post('/api/vm/create/vue2/template', async (req, res) => {
   const { name, type, template, vue2Version, vueRouterVersion } = req.body

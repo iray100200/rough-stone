@@ -90,7 +90,7 @@ class MonacoEditor extends React.Component {
       noEmit: true,
       allowJs: true,
       typeRoots: ['node_modules/@types'],
-      newLine: this.monaco.languages.typescript.NewLineKind.LineFeed,
+      newLine: this.monaco.languages.typescript.NewLineKind.LineFeed
     }
 
     this.monaco.languages.typescript.typescriptDefaults.setCompilerOptions(compilerDefaults)
@@ -107,7 +107,7 @@ class MonacoEditor extends React.Component {
       saveViewState={true}
       language={language[this.props.fileExtension]}
       onChange={this.handleChange}
-      theme="rs-vs-dark"
+      theme="vs-dark"
       beforeMount={this.handleInitEditor}
       onMount={this.handleEditorDidMount}></Editor>
   }
