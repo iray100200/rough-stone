@@ -66,6 +66,9 @@ const styles = () => ({
     fontSize: 12,
     lineHeight: '24px',
     padding: '0 4px'
+  },
+  treeItem: {
+    
   }
 })
 
@@ -219,8 +222,8 @@ class FileManagement extends React.PureComponent {
     if(!nodes) return null
     const TreeItem = wrapTreeItem(MtTreeItem)
     const { classes } = this.props
-    const iconSize = 15
-    const style = { display: 'flex', alignItems: 'center', height: 24, outline: 'none', backgroundColor: 'transparent', border: 0, color: '#fff' }
+    const iconSize = 14
+    const style = { outline: 'none', backgroundColor: 'transparent', border: 0, color: '#fff' }
     if(nodes.type === DIRTYPES.NEW_FILE && this.file) {
       const icon = <InsertDriveFileIcon style={{ fontSize: iconSize }} />
       return <TreeItem
