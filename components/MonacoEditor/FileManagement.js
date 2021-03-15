@@ -23,7 +23,7 @@ const styles = () => ({
     height: 32
   },
   sideContentTree: {
-    padding: '8px 0 8px 12px',
+    padding: '4px 0 4px 12px',
     fontSize: 12
   },
   sideContentHeadIcon: {
