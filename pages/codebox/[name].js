@@ -2,13 +2,8 @@ import React from 'react'
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import BugReportIcon from '@material-ui/icons/BugReport'
-import Button from '@material-ui/core/Button'
 import Box from '@material-ui/core/Box'
 import { withStyles } from '@material-ui/core/styles'
-import Menu from '../../components/Menu'
-import MenuList from '@material-ui/core/MenuList'
-import MenuItem from '@material-ui/core/MenuItem'
-import Divider from '@material-ui/core/Divider'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
@@ -20,6 +15,7 @@ import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord'
 import MenuConfig from '../../components/MonacoEditor/menu.config'
 import FileManagement from '../../components/MonacoEditor/FileManagement'
 import Editor from '../../components/MonacoEditor/Editor'
+import Menus from '../../components/MonacoEditor/Menus'
 
 const EVENT_EMITTER = new events.EventEmitter()
 const RESPONSE_STATUS = {
@@ -35,18 +31,8 @@ const styles = (theme) => ({
   view: {
     backgroundColor: '#fff'
   },
-  btn: {
-    height: 34,
-    borderRadius: 0,
-    fontSize: 12,
-    minWidth: 50,
-    padding: '6px 12px'
-  },
   divider: {
     margin: '4px 0'
-  },
-  shortcut: {
-    fontWeight: 300
   },
   side: {
     background: '#263238'
@@ -144,8 +130,6 @@ class App extends React.Component {
 
     this.state = {
       code: '',
-      currentMenuKey: null,
-      active: false,
       currentSideMenuKey: 0,
       currentFileKey: 0,
       displayFileList: [],
@@ -272,20 +256,6 @@ class App extends React.Component {
     if(!this.model) return
     this.editor.getModel().redo()
   }
-  handleSelect = (index) => {
-    return () => {
-      this.setState({
-        currentMenuKey: index,
-        active: true
-      })
-    }
-  }
-  handleCloseAll = () => {
-    this.setState({
-      currentMenuKey: null,
-      active: false
-    })
-  }
   handleSelectSideMenu = (index) => {
     return () => {
       this.setState({
@@ -370,15 +340,9 @@ class App extends React.Component {
     }).then(this.handleReadResourceTree)
   }
   handleRunCommand = ({ command, click }) => {
-    return () => {
-      if(click) click()
-      if(!command) return
-      EVENT_EMITTER.emit(command)
-      this.setState({
-        currentMenuKey: null,
-        active: false
-      })
-    }
+    if(click) click()
+    if(!command) return
+    EVENT_EMITTER.emit(command)
   }
   handleFileChange = () => {
     const { displayFileList, currentFileKey } = this.state
@@ -407,42 +371,7 @@ class App extends React.Component {
           <Box width={56} display="flex" alignItems="center" justifyContent="center">
             <BugReportIcon />
           </Box>
-          {
-            this.menus.map((item, index) => {
-              return <Menu
-                onClick={this.handleSelect(index)}
-                onClose={this.handleCloseAll}
-                key={index}
-                selected={this.state.currentMenuKey === index}
-                active={this.state.active}
-                trigger={(
-                  <Button
-                    disableElevation
-                    disableFocusRipple
-                    disableRipple
-                    variant={this.state.currentMenuKey === index ? 'contained' : 'text'}
-                    className={classes.btn}
-                    color="secondary"
-                    size="small">{item.name}</Button>
-                )}>
-                <MenuList>
-                  {
-                    item.menuList.map((item, nindex) => {
-                      if(item.type === 'divider') {
-                        return <Divider key={String(index) + '-' + String(nindex)} className={classes.divider} light />
-                      }
-                      return <MenuItem onClick={this.handleRunCommand(item)} key={String(index) + '-' + String(nindex)}>
-                        <Box width="100%" alignItems="center" display="flex">
-                          <Box lineHeight={1} marginRight={6} flexGrow={1} overflow="hidden">{item.name}</Box>
-                          <Box className={classes.shortcut}>{item.shortcut}</Box>
-                        </Box>
-                      </MenuItem>
-                    })
-                  }
-                </MenuList>
-              </Menu>
-            })
-          }
+          <Menus onRunCommand={this.handleRunCommand} />
         </Toolbar>
       </AppBar>
       <Toolbar className={classes.toolbar} variant="dense" />
